@@ -1,0 +1,33 @@
+target/
+.m2/
+frontend/node_modules/
+frontend/dist/
+frontend/.npm-cache/
+frontend/.npm-cache2/
+docs/
+.idea/
+.vscode/
+*.iml
+*.log
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+application-local.yml
+application-local.yaml
+application-secret.yml
+application-secret.yaml
+src/main/resources/application-local.yml
+src/main/resources/application-local.yaml
+src/main/resources/application-secret.yml
+src/main/resources/application-secret.yaml
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+
+# OS files
+.DS_Store
+Thumbs.db
