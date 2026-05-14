@@ -19,8 +19,9 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
     private static final Logger log = LoggerFactory.getLogger(OpenAiCompatibleLlmClient.class);
 
-    private final LlmProperties properties;
-    private final RestClient.Builder restClientBuilder;
+    //构造器
+    private final LlmProperties properties; // LLM 配置（API Key、模型名等）
+    private final RestClient.Builder restClientBuilder; // HTTP 客户端构建器
 
     public OpenAiCompatibleLlmClient(LlmProperties properties, RestClient.Builder restClientBuilder) {
         this.properties = properties;
@@ -29,12 +30,12 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
     @Override
     public LlmChatResult chat(LlmChatRequest request) {
-        validateConfiguration();
+        validateConfiguration();// 检查 baseUrl、apiKey、model 是否配置
 
         ChatCompletionRequest body = new ChatCompletionRequest(
-                properties.model(),
-                request.messages(),
-                properties.resolvedTemperature()
+                properties.model(),              // 模型名称（如 gpt-4、deepseek-chat）
+                request.messages(),              // 消息列表（系统提示词 + 用户消息）
+                properties.resolvedTemperature() // 温度参数（控制随机性）
         );
 
         long start = System.nanoTime();
@@ -89,6 +90,7 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
                 .build();
     }
 
+    // 检查 baseUrl、apiKey、model 是否配置
     private void validateConfiguration() {
         if (isBlank(properties.baseUrl())) {
             throw new LlmConfigurationException("LLM_BASE_URL is not configured");
@@ -134,21 +136,21 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
     }
 
     private record ChatCompletionRequest(
-            String model,
-            List<PromptMessage> messages,
-            Double temperature
+            String model,                    // 模型名称
+            List<PromptMessage> messages,    // 消息列表
+            Double temperature               // 温度参数
     ) {
     }
 
     private record ChatCompletionResponse(
-            String model,
-            List<ChatChoice> choices,
-            Map<String, Object> usage
+            String model,                    // 使用的模型
+            List<ChatChoice> choices,        // 候选回复列表
+            Map<String, Object> usage        // Token 使用情况
     ) {
     }
 
     private record ChatChoice(
-            PromptMessage message
+            PromptMessage message          // AI 的回复消息
     ) {
     }
 }

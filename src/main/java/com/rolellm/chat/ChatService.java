@@ -32,23 +32,24 @@ public class ChatService {
     public ChatResponse chat(String message) {
         List<PromptMessage> messages = new ArrayList<>();
 
+       // 添加系统提示词（可选）
         Optional<String> optionalPrompt = rolePromptProvider.currentSystemPrompt();
         if (optionalPrompt.isPresent()) {
             String systemPrompt = optionalPrompt.get();
-            messages.add(new PromptMessage(MessageRole.SYSTEM.value(), systemPrompt));
+            PromptMessage p = new PromptMessage(MessageRole.SYSTEM.value(), systemPrompt);
+            messages.add(p);
         }
+        // 添加用户消息  将用户的输入消息包装成 USER 角色的消息并添加到列表
+         PromptMessage t = new PromptMessage(MessageRole.USER.value(), message);
+         messages.add(t);
 
-        messages.add(new PromptMessage(MessageRole.USER.value(), message));
+        // 构建 LLM 请求对象
+        LlmChatRequest request = new LlmChatRequest(messages);
 
-        log.info("Prompt messages prepared: count={}, roles={}",
-                messages.size(),
-                messages.stream().map(PromptMessage::role).toList());
+        // 调用大模型 API
+        LlmChatResult result = llmClient.chat(request);
 
-        LlmChatResult result = llmClient.chat(new LlmChatRequest(messages));
-        log.info("Chat response ready: model={}, replyLength={}, usage={}",
-                result.model(),
-                result.reply().length(),
-                result.usage());
+        log.info(" model={}, replyLength={}, usage={}", result.model(), result.reply().length(), result.usage());
         return new ChatResponse(result.reply(), result.model(), result.usage());
     }
 }
