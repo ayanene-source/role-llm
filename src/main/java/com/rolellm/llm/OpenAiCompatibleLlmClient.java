@@ -19,8 +19,8 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
     private static final Logger log = LoggerFactory.getLogger(OpenAiCompatibleLlmClient.class);
 
-    //构造器
-    private final LlmProperties properties; // LLM 配置（API Key、模型名等）
+    // 构造器依赖：LLM 配置和 HTTP 客户端构建器由 Spring 注入
+    private final LlmProperties properties; // LLM 配置：API Key、模型名等
     private final RestClient.Builder restClientBuilder; // HTTP 客户端构建器
 
     public OpenAiCompatibleLlmClient(LlmProperties properties, RestClient.Builder restClientBuilder) {
@@ -30,20 +30,20 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
     @Override
     public LlmChatResult chat(LlmChatRequest request) {
-        validateConfiguration();// 检查 baseUrl、apiKey、model 是否配置
+        validateConfiguration(); // 检查 baseUrl、apiKey、model 是否配置
 
         ChatCompletionRequest body = new ChatCompletionRequest(
-                properties.model(),              // 模型名称（如 gpt-4、deepseek-chat）
-                request.messages(),              // 消息列表（系统提示词 + 用户消息）
-                properties.resolvedTemperature() // 温度参数（控制随机性）
+                properties.model(),              // 模型名称
+                request.getMessages(),           // 消息列表：系统提示词 + 历史消息 + 用户消息
+                properties.resolvedTemperature() // 温度参数：控制随机性
         );
 
-        long start = System.nanoTime();
+        long start = System.nanoTime(); // 记录开始时间
         log.info("Calling LLM API: baseUrl={}, endpoint=/chat/completions, requestModel={}, temperature={}, messageCount={}",
                 trimTrailingSlash(properties.baseUrl()),
                 properties.model(),
                 properties.resolvedTemperature(),
-                request.messages().size());
+                request.getMessages().size());
 
         try {
             ChatCompletionResponse response = restClient()
@@ -62,9 +62,9 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
             long elapsedMs = (System.nanoTime() - start) / 1_000_000;
             log.info("LLM API response received: requestModel={}, responseModel={}, costMs={}, usage={}",
                     properties.model(),
-                    result.model(),
+                    result.getModel(),
                     elapsedMs,
-                    result.usage());
+                    result.getUsage());
             return result;
         } catch (LlmApiException exception) {
             long elapsedMs = (System.nanoTime() - start) / 1_000_000;
@@ -90,7 +90,6 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
                 .build();
     }
 
-    // 检查 baseUrl、apiKey、model 是否配置
     private void validateConfiguration() {
         if (isBlank(properties.baseUrl())) {
             throw new LlmConfigurationException("LLM_BASE_URL is not configured");
@@ -108,11 +107,11 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
             throw new LlmApiException("LLM API returned an empty response");
         }
         ChatChoice firstChoice = response.choices().getFirst();
-        if (firstChoice == null || firstChoice.message() == null || isBlank(firstChoice.message().content())) {
+        if (firstChoice == null || firstChoice.message() == null || isBlank(firstChoice.message().getContent())) {
             throw new LlmApiException("LLM API did not return a valid reply");
         }
         return new LlmChatResult(
-                firstChoice.message().content(),
+                firstChoice.message().getContent(),
                 response.model() == null ? properties.model() : response.model(),
                 response.usage() == null ? Map.of() : response.usage()
         );
@@ -136,21 +135,21 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
     }
 
     private record ChatCompletionRequest(
-            String model,                    // 模型名称
-            List<PromptMessage> messages,    // 消息列表
-            Double temperature               // 温度参数
+            String model,                 // 模型名称
+            List<PromptMessage> messages, // 消息列表
+            Double temperature            // 温度参数
     ) {
     }
 
     private record ChatCompletionResponse(
-            String model,                    // 使用的模型
-            List<ChatChoice> choices,        // 候选回复列表
-            Map<String, Object> usage        // Token 使用情况
+            String model,             // 使用的模型
+            List<ChatChoice> choices, // 候选回复列表
+            Map<String, Object> usage // Token 使用情况
     ) {
     }
 
     private record ChatChoice(
-            PromptMessage message          // AI 的回复消息
+            PromptMessage message // AI 的回复消息
     ) {
     }
 }

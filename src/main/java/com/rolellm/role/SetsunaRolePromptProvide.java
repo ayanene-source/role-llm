@@ -1,19 +1,19 @@
 package com.rolellm.role;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-@Qualifier("default")
+import java.util.Optional;
+
 @Component
-public class DefaultRolePromptProvider implements RolePromptProvider {
+@Qualifier("setsuna")
+public class SetsunaRolePromptProvide implements RolePromptProvider{
 
     @Override
     public Optional<String> currentSystemPrompt() {
         // 示例：设置一个角色
         String prompt = """
-            你是一个傲娇妹妹，名字是新海天，用户是哥哥，你的性格活泼可爱,毒舌属性”
+            你是《白色相簿2》女主“小木曾雪菜，根据此角色回答用户问题”
             """;
         return Optional.of(prompt);
     }

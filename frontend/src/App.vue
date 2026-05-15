@@ -6,7 +6,12 @@
           <p class="eyebrow">RoleLLM</p>
           <h1>LLM 对话系统</h1>
         </div>
-        <el-tag v-if="lastModel" effect="plain" type="info">{{ lastModel }}</el-tag>
+        <div class="header-actions">
+          <el-tag v-if="lastModel" effect="plain" type="info">{{ lastModel }}</el-tag>
+          <el-button :disabled="loading && messages.length === 0" @click="startNewConversation">
+            新对话
+          </el-button>
+        </div>
       </header>
 
       <div ref="messageListRef" class="message-list" aria-live="polite">
@@ -26,7 +31,7 @@
 
         <div v-if="messages.length === 0 && !loading" class="empty-state">
           <h2>开始一次对话</h2>
-          <p>输入一句话，后端会通过 DeepSeek 的 OpenAI-compatible Chat API 返回回复。</p>
+          <p>输入一句话，后端会通过 DeepSeek 的 OpenAI-compatible Chat API 返回回复，并在本轮会话中记住上下文。</p>
         </div>
       </div>
 
@@ -76,6 +81,7 @@ const input = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const lastModel = ref('')
+const conversationId = ref('')
 const messageListRef = ref(null)
 
 const canSend = computed(() => input.value.trim().length > 0 && !loading.value)
@@ -93,15 +99,24 @@ async function handleSend() {
   await scrollToBottom()
 
   try {
-    const result = await sendChatMessage(text)
+    const result = await sendChatMessage(text, conversationId.value)
     messages.value.push(createMessage('assistant', result.reply || ''))
     lastModel.value = result.model || ''
+    conversationId.value = result.conversationId || conversationId.value
   } catch (error) {
     errorMessage.value = error.message || '请求失败，请稍后重试'
   } finally {
     loading.value = false
     await scrollToBottom()
   }
+}
+
+function startNewConversation() {
+  messages.value = []
+  input.value = ''
+  errorMessage.value = ''
+  lastModel.value = ''
+  conversationId.value = ''
 }
 
 function createMessage(role, content) {

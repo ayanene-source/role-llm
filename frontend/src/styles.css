@@ -59,6 +59,14 @@ textarea {
   background: #ffffff;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .eyebrow {
   margin: 0 0 4px;
   color: #2f6f9f;
@@ -186,10 +194,15 @@ h1 {
 
   .chat-header {
     padding: 16px;
+    align-items: flex-start;
   }
 
   h1 {
     font-size: 20px;
+  }
+
+  .header-actions {
+    gap: 8px;
   }
 
   .message-list {

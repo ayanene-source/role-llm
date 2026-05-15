@@ -1,12 +1,17 @@
 const API_URL = '/api/chat'
 
-export async function sendChatMessage(message) {
+export async function sendChatMessage(message, conversationId) {
+  const body = { message }
+  if (conversationId) {
+    body.conversationId = conversationId
+  }
+
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ message })
+    body: JSON.stringify(body)
   })
 
   const data = await response.json().catch(() => null)
