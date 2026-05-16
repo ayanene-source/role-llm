@@ -11,6 +11,17 @@ llm:
   model: ${LLM_MODEL:deepseek-v4-flash}
   temperature: ${LLM_TEMPERATURE:0.7}
 
+tts:
+  enabled: ${TTS_ENABLED:false}
+  base-url: ${TTS_BASE_URL:http://127.0.0.1:9880}
+  text-lang: ${TTS_TEXT_LANG:zh}
+  prompt-lang: ${TTS_PROMPT_LANG:ja}
+  media-type: ${TTS_MEDIA_TYPE:wav}
+  streaming-mode: ${TTS_STREAMING_MODE:false}
+  ref-audio-path: ${TTS_REF_AUDIO_PATH:}
+  prompt-text: ${TTS_PROMPT_TEXT:}
+  output-dir: ${TTS_OUTPUT_DIR:data/audio}
+
 app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}

@@ -19,6 +19,13 @@
           <div class="message-bubble">
             <div class="message-author">{{ message.role === 'user' ? '你' : 'AI' }}</div>
             <div class="message-content">{{ message.content }}</div>
+            <audio
+              v-if="message.audioUrl"
+              class="message-audio"
+              :src="message.audioUrl"
+              controls
+              preload="none"
+            />
           </div>
         </div>
 
@@ -31,7 +38,7 @@
 
         <div v-if="messages.length === 0 && !loading" class="empty-state">
           <h2>开始一次对话</h2>
-          <p>输入一句话，后端会通过 DeepSeek 的 OpenAI-compatible Chat API 返回回复，并在本轮会话中记住上下文。</p>
+          <p>输入一句话，后端会返回文字回复；开启 TTS 后，AI 回复下方会出现中文语音播放器。</p>
         </div>
       </div>
 
@@ -100,7 +107,7 @@ async function handleSend() {
 
   try {
     const result = await sendChatMessage(text, conversationId.value)
-    messages.value.push(createMessage('assistant', result.reply || ''))
+    messages.value.push(createMessage('assistant', result.reply || '', result.audioUrl || ''))
     lastModel.value = result.model || ''
     conversationId.value = result.conversationId || conversationId.value
   } catch (error) {
@@ -119,11 +126,12 @@ function startNewConversation() {
   conversationId.value = ''
 }
 
-function createMessage(role, content) {
+function createMessage(role, content, audioUrl = '') {
   return {
     id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
     role,
-    content
+    content,
+    audioUrl
   }
 }
 

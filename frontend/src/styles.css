@@ -129,6 +129,13 @@ h1 {
   line-height: 1.7;
 }
 
+.message-audio {
+  width: min(360px, 100%);
+  height: 40px;
+  margin-top: 12px;
+  display: block;
+}
+
 .loading-bubble {
   min-width: 280px;
 }

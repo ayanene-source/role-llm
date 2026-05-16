@@ -9,6 +9,7 @@ import com.rolellm.llm.LlmClient;
 import com.rolellm.llm.MessageRole;
 import com.rolellm.llm.PromptMessage;
 import com.rolellm.role.RolePromptProvider;
+import com.rolellm.tts.TtsClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,18 +22,20 @@ import org.springframework.stereotype.Service;
 public class ChatService {
 
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
-
     private final LlmClient llmClient;
     private final RolePromptProvider rolePromptProvider;
     private final ChatMemoryService chatMemoryService;
+    private final TtsClient ttsClient;
 
     public ChatService(
             LlmClient llmClient,
             @Qualifier("default") RolePromptProvider rolePromptProvider,
-            ChatMemoryService chatMemoryService) {
+            ChatMemoryService chatMemoryService,
+            TtsClient ttsClient) {
         this.llmClient = llmClient;
         this.rolePromptProvider = rolePromptProvider;
         this.chatMemoryService = chatMemoryService;
+        this.ttsClient = ttsClient;
     }
 
     public ChatResponse chat(ChatRequest chatRequest) {
@@ -63,20 +66,33 @@ public class ChatService {
         // 构建 LLM 请求对象
         LlmChatRequest request = new LlmChatRequest(messages);
 
-        // 调用大模型 API
+        // 调用大模型 API，主回复保持中文，返回给前端展示
         LlmChatResult result = llmClient.chat(request);
 
-        // 追加消息到记忆
+        // 追加中文对话消息到记忆
         chatMemoryService.appendUserAndAssistant(
                 conversationId,
                 chatRequest.getMessage(),
                 result.getReply());
 
-        log.info("model={}, replyLength={}, usage={}, conversationId={}",
+        String audioUrl = createChineseAudio(result.getReply()).orElse(null);
+
+        log.info("model={}, replyLength={}, usage={}, conversationId={}, audioUrl={}",
                 result.getModel(),
                 result.getReply().length(),
                 result.getUsage(),
-                conversationId);
-        return new ChatResponse(result.getReply(), result.getModel(), result.getUsage(), conversationId);
+                conversationId,
+                audioUrl);
+        return new ChatResponse(result.getReply(), result.getModel(), result.getUsage(), conversationId, audioUrl);
+    }
+
+    private Optional<String> createChineseAudio(String reply) {
+        try {
+            log.info("TTS text prepared: textLength={}, text={}", reply.length(), reply);
+            return ttsClient.synthesize(reply);
+        } catch (RuntimeException exception) {
+            log.warn("TTS generation failed: {}", exception.getMessage());
+            return Optional.empty();
+        }
     }
 }

@@ -8,6 +8,7 @@ public class ChatResponse {
     private String model;
     private Map<String, Object> usage;
     private String conversationId;
+    private String audioUrl;
 
     public ChatResponse() {
     }
@@ -17,6 +18,14 @@ public class ChatResponse {
         this.model = model;
         this.usage = usage;
         this.conversationId = conversationId;
+    }
+
+    public ChatResponse(String reply, String model, Map<String, Object> usage, String conversationId, String audioUrl) {
+        this.reply = reply;
+        this.model = model;
+        this.usage = usage;
+        this.conversationId = conversationId;
+        this.audioUrl = audioUrl;
     }
 
     public String getReply() {
@@ -49,5 +58,13 @@ public class ChatResponse {
 
     public void setConversationId(String conversationId) {
         this.conversationId = conversationId;
+    }
+
+    public String getAudioUrl() {
+        return audioUrl;
+    }
+
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
     }
 }
