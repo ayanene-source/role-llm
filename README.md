@@ -5,8 +5,9 @@ RoleLLM 是一个前后端分离的 LLM 对话系统第一版。
 - 前端：Vue 3 + Element Plus
 - 后端：Spring Boot + Java
 - 模型平台：DeepSeek OpenAI-compatible Chat API
+- GPT-SoVITS服务
 
-第一版只实现基础聊天能力：不登录、不保存历史、不使用数据库、不做流式输出。
+已经实现对话、基础上下文记忆保存以及语音生成功能。
 
 ## 文档
 
@@ -52,23 +53,6 @@ http://localhost:5173
 ```
 
 Vite 会把 `/api` 代理到 `http://localhost:8080`。
-
-## 当前接口
-
-```http
-POST /api/chat
-Content-Type: application/json
-
-{ "message": "你好" }
-```
-
-响应：
-
-```json
-{
-  "reply": "...",
-  "model": "...",
-  "usage": {}
 }
 ```
 
