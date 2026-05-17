@@ -4,7 +4,7 @@
       <header class="chat-header">
         <div>
           <p class="eyebrow">RoleLLM</p>
-          <h1>LLM 对话系统</h1>
+          <h1>若叶睦对话系统</h1>
         </div>
         <div class="header-actions">
           <el-tag v-if="lastModel" effect="plain" type="info">{{ lastModel }}</el-tag>
@@ -16,8 +16,12 @@
 
       <div ref="messageListRef" class="message-list" aria-live="polite">
         <div v-for="message in messages" :key="message.id" :class="['message-row', message.role]">
+          <div class="message-avatar" :aria-label="message.role === 'user' ? '用户头像' : 'AI 角色头像'">
+            <img v-if="message.role === 'assistant'" :src="aiAvatar" alt="" />
+            <span v-else>你</span>
+          </div>
           <div class="message-bubble">
-            <div class="message-author">{{ message.role === 'user' ? '你' : 'AI' }}</div>
+            <div class="message-author">{{ message.role === 'user' ? '你' : '若叶睦' }}</div>
             <div class="message-content">{{ message.content }}</div>
             <audio
               v-if="message.audioUrl"
@@ -30,6 +34,9 @@
         </div>
 
         <div v-if="loading" class="message-row assistant">
+          <div class="message-avatar" aria-label="AI 角色头像">
+            <img :src="aiAvatar" alt="" />
+          </div>
           <div class="message-bubble loading-bubble">
             <div class="message-author">AI</div>
             <el-skeleton animated :rows="2" />
@@ -82,6 +89,7 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue'
 import { sendChatMessage } from './api/chat'
+import aiAvatar from './assets/avatars/mutsumi.jpg'
 
 const messages = ref([])
 const input = ref('')

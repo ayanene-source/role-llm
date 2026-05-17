@@ -88,11 +88,29 @@ public class ChatService {
 
     private Optional<String> createChineseAudio(String reply) {
         try {
-            log.info("TTS text prepared: textLength={}, text={}", reply.length(), reply);
-            return ttsClient.synthesize(reply);
+            String speechText = prepareSpeechText(reply);
+            if (speechText.isBlank()) {
+                log.warn("TTS skipped because speech text is blank after cleanup");
+                return Optional.empty();
+            }
+            log.info("TTS text prepared: originalLength={}, speechLength={}, speechText={}",
+                    reply.length(),
+                    speechText.length(),
+                    speechText);
+            return ttsClient.synthesize(speechText);
         } catch (RuntimeException exception) {
             log.warn("TTS generation failed: {}", exception.getMessage());
             return Optional.empty();
         }
+    }
+
+    private String prepareSpeechText(String reply) {
+        return reply
+                .replaceAll("（[^）]*）", "")
+                .replaceAll("\\([^)]*\\)", "")
+                .replaceAll("【[^】]*】", "")
+                .replaceAll("\\[[^]]*]", "")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 }
