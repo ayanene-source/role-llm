@@ -14,6 +14,12 @@ RoleLLM 是一个前后端分离的 LLM 对话系统第一版。
 - [后端流程说明](docs/BACKEND_FLOW.md)
 - [OpenAPI 文件](docs/openapi.yaml)：可导入 Apifox
 
+##  GPT-SoVITS启动
+```powershell：
+cd E:\GPT-SoVITS-v2pro-20250604\GPT-SoVITS-v2pro-20250604
+runtime\python.exe -I api_v2.py -a 127.0.0.1 -p 9880 -c GPT_SoVITS/configs/tts_infer.yaml
+```
+
 ## 后端启动
 
 API Key 只能放在后端环境变量或 `application.yml`，不要写进前端代码。
@@ -21,11 +27,8 @@ API Key 只能放在后端环境变量或 `application.yml`，不要写进前端
 PowerShell 示例：
 
 ```powershell
-$env:LLM_BASE_URL="https://api.deepseek.com"
 $env:LLM_API_KEY="你的 DeepSeek API Key"
-$env:LLM_MODEL="deepseek-v4-flash"
-$env:LLM_TEMPERATURE="0.7"
-mvn spring-boot:run
+mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 后端默认地址：
