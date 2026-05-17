@@ -24,6 +24,23 @@ public class GptSovitsTtsRequest {
     @JsonProperty("streaming_mode")
     private boolean streamingMode;
 
+    @JsonProperty("text_split_method")
+    private String textSplitMethod;
+
+    @JsonProperty("speed_factor")
+    private double speedFactor;
+
+    @JsonProperty("top_k")
+    private int topK;
+
+    @JsonProperty("top_p")
+    private double topP;
+
+    private double temperature;
+
+    @JsonProperty("fragment_interval")
+    private double fragmentInterval;
+
     public GptSovitsTtsRequest() {
     }
 
@@ -35,6 +52,12 @@ public class GptSovitsTtsRequest {
         this.promptLang = properties.getPromptLang();
         this.mediaType = properties.getMediaType();
         this.streamingMode = properties.isStreamingMode();
+        this.textSplitMethod = properties.getTextSplitMethod();
+        this.speedFactor = properties.getSpeedFactor();
+        this.topK = properties.getTopK();
+        this.topP = properties.getTopP();
+        this.temperature = properties.getTemperature();
+        this.fragmentInterval = properties.getFragmentInterval();
     }
 
     public String getText() {
@@ -91,5 +114,53 @@ public class GptSovitsTtsRequest {
 
     public void setStreamingMode(boolean streamingMode) {
         this.streamingMode = streamingMode;
+    }
+
+    public String getTextSplitMethod() {
+        return textSplitMethod;
+    }
+
+    public void setTextSplitMethod(String textSplitMethod) {
+        this.textSplitMethod = textSplitMethod;
+    }
+
+    public double getSpeedFactor() {
+        return speedFactor;
+    }
+
+    public void setSpeedFactor(double speedFactor) {
+        this.speedFactor = speedFactor;
+    }
+
+    public int getTopK() {
+        return topK;
+    }
+
+    public void setTopK(int topK) {
+        this.topK = topK;
+    }
+
+    public double getTopP() {
+        return topP;
+    }
+
+    public void setTopP(double topP) {
+        this.topP = topP;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
+    public double getFragmentInterval() {
+        return fragmentInterval;
+    }
+
+    public void setFragmentInterval(double fragmentInterval) {
+        this.fragmentInterval = fragmentInterval;
     }
 }

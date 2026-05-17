@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -21,6 +22,7 @@ public class GptSovitsTtsClient implements TtsClient {
 
     private final TtsProperties properties;
     private final RestClient.Builder restClientBuilder;
+    private final AtomicBoolean weightsLoaded = new AtomicBoolean(false);
 
     public GptSovitsTtsClient(TtsProperties properties, RestClient.Builder restClientBuilder) {
         this.properties = properties;
@@ -39,6 +41,7 @@ public class GptSovitsTtsClient implements TtsClient {
 
         long start = System.nanoTime();
         try {
+            ensureWeightsLoaded();
             byte[] audioBytes = restClient()
                     .post()
                     .uri("/tts")
@@ -69,6 +72,56 @@ public class GptSovitsTtsClient implements TtsClient {
             log.warn("TTS generation failed: {}", exception.getMessage());
             return Optional.empty();
         }
+    }
+
+    private void ensureWeightsLoaded() {
+        if (weightsLoaded.get()) {
+            return;
+        }
+        synchronized (weightsLoaded) {
+            if (weightsLoaded.get()) {
+                return;
+            }
+            loadWeights();
+            weightsLoaded.set(true);
+        }
+    }
+
+    private void loadWeights() {
+        if (isBlank(properties.getGptWeightsPath()) && isBlank(properties.getSovitsWeightsPath())) {
+            log.info("GPT-SoVITS weight paths are not configured, using current API weights");
+            return;
+        }
+        RestClient client = restClient();
+        if (!isBlank(properties.getGptWeightsPath())) {
+            log.info("Loading GPT-SoVITS GPT weights: {}", properties.getGptWeightsPath());
+            client.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/set_gpt_weights")
+                            .queryParam("weights_path", properties.getGptWeightsPath())
+                            .build())
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            (request, response) -> {
+                                throw new TtsException("Set GPT weights failed: " + readErrorBody(response));
+                            })
+                    .toBodilessEntity();
+        }
+        if (!isBlank(properties.getSovitsWeightsPath())) {
+            log.info("Loading GPT-SoVITS SoVITS weights: {}", properties.getSovitsWeightsPath());
+            client.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/set_sovits_weights")
+                            .queryParam("weights_path", properties.getSovitsWeightsPath())
+                            .build())
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            (request, response) -> {
+                                throw new TtsException("Set SoVITS weights failed: " + readErrorBody(response));
+                            })
+                    .toBodilessEntity();
+        }
+        log.info("GPT-SoVITS weights loaded");
     }
 
     private RestClient restClient() {

@@ -14,6 +14,14 @@ public class TtsProperties {
     private String refAudioPath;
     private String promptText;
     private String outputDir = "data/audio";
+    private String gptWeightsPath;
+    private String sovitsWeightsPath;
+    private String textSplitMethod = "cut4";
+    private double speedFactor = 1.0;
+    private int topK = 15;
+    private double topP = 1.0;
+    private double temperature = 1.0;
+    private double fragmentInterval = 0.3;
 
     public boolean isEnabled() {
         return enabled;
@@ -85,5 +93,69 @@ public class TtsProperties {
 
     public void setOutputDir(String outputDir) {
         this.outputDir = outputDir;
+    }
+
+    public String getGptWeightsPath() {
+        return gptWeightsPath;
+    }
+
+    public void setGptWeightsPath(String gptWeightsPath) {
+        this.gptWeightsPath = gptWeightsPath;
+    }
+
+    public String getSovitsWeightsPath() {
+        return sovitsWeightsPath;
+    }
+
+    public void setSovitsWeightsPath(String sovitsWeightsPath) {
+        this.sovitsWeightsPath = sovitsWeightsPath;
+    }
+
+    public String getTextSplitMethod() {
+        return textSplitMethod;
+    }
+
+    public void setTextSplitMethod(String textSplitMethod) {
+        this.textSplitMethod = textSplitMethod;
+    }
+
+    public double getSpeedFactor() {
+        return speedFactor;
+    }
+
+    public void setSpeedFactor(double speedFactor) {
+        this.speedFactor = speedFactor;
+    }
+
+    public int getTopK() {
+        return topK;
+    }
+
+    public void setTopK(int topK) {
+        this.topK = topK;
+    }
+
+    public double getTopP() {
+        return topP;
+    }
+
+    public void setTopP(double topP) {
+        this.topP = topP;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
+    public double getFragmentInterval() {
+        return fragmentInterval;
+    }
+
+    public void setFragmentInterval(double fragmentInterval) {
+        this.fragmentInterval = fragmentInterval;
     }
 }

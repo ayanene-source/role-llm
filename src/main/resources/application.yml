@@ -20,6 +20,14 @@ tts:
   streaming-mode: ${TTS_STREAMING_MODE:false}
   ref-audio-path: ${TTS_REF_AUDIO_PATH:}
   prompt-text: ${TTS_PROMPT_TEXT:}
+  gpt-weights-path: ${TTS_GPT_WEIGHTS_PATH:}
+  sovits-weights-path: ${TTS_SOVITS_WEIGHTS_PATH:}
+  text-split-method: ${TTS_TEXT_SPLIT_METHOD:cut4}
+  speed-factor: ${TTS_SPEED_FACTOR:1.0}
+  top-k: ${TTS_TOP_K:15}
+  top-p: ${TTS_TOP_P:1.0}
+  temperature: ${TTS_TEMPERATURE:1.0}
+  fragment-interval: ${TTS_FRAGMENT_INTERVAL:0.3}
   output-dir: ${TTS_OUTPUT_DIR:data/audio}
 
 app:
