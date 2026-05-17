@@ -4,9 +4,16 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -136,7 +143,100 @@ public class GptSovitsTtsClient implements TtsClient {
         Path outputDir = Path.of(properties.getOutputDir()).toAbsolutePath().normalize();
         Files.createDirectories(outputDir);
         Files.write(outputDir.resolve(fileName), audioBytes);
+        cleanupOldAudioFiles(outputDir);
         return fileName;
+    }
+
+    private void cleanupOldAudioFiles(Path outputDir) {
+        try {
+            int deleted = deleteExpiredFiles(outputDir) + deleteOverflowFiles(outputDir);
+            int remaining = countRegularFiles(outputDir);
+            log.info("TTS audio cleanup finished: deleted={}, remaining={}", deleted, remaining);
+        } catch (IOException exception) {
+            log.warn("TTS audio cleanup failed: {}", exception.getMessage());
+        }
+    }
+
+    private int deleteExpiredFiles(Path outputDir) throws IOException {
+        long ttlMinutes = properties.getAudioTtlMinutes();
+        if (ttlMinutes <= 0) {
+            return 0;
+        }
+
+        Instant expiresBefore = Instant.now().minus(ttlMinutes, ChronoUnit.MINUTES);
+        int deleted = 0;
+        try (Stream<Path> paths = Files.list(outputDir)) {
+            for (Path path : paths.toList()) {
+                if (!Files.isRegularFile(path)) {
+                    continue;
+                }
+                FileTime lastModifiedTime = Files.getLastModifiedTime(path);
+                if (lastModifiedTime.toInstant().isBefore(expiresBefore) && deleteFile(path)) {
+                    deleted++;
+                }
+            }
+        }
+        return deleted;
+    }
+
+    private int deleteOverflowFiles(Path outputDir) throws IOException {
+        int maxFiles = properties.getAudioMaxFiles();
+        if (maxFiles <= 0) {
+            return 0;
+        }
+
+        List<Path> files = listAudioFiles(outputDir);
+        int overflow = files.size() - maxFiles;
+        if (overflow <= 0) {
+            return 0;
+        }
+
+        int deleted = 0;
+        for (Path path : files) {
+            if (deleted >= overflow) {
+                break;
+            }
+            if (deleteFile(path)) {
+                deleted++;
+            }
+        }
+        return deleted;
+    }
+
+    private List<Path> listAudioFiles(Path outputDir) throws IOException {
+        ArrayList<Path> files = new ArrayList<>();
+        try (Stream<Path> paths = Files.list(outputDir)) {
+            for (Path path : paths.toList()) {
+                if (Files.isRegularFile(path)) {
+                    files.add(path);
+                }
+            }
+        }
+        files.sort(Comparator.comparing(this::lastModifiedTimeOrEpoch));
+        return files;
+    }
+
+    private int countRegularFiles(Path outputDir) throws IOException {
+        try (Stream<Path> paths = Files.list(outputDir)) {
+            return (int) paths.filter(Files::isRegularFile).count();
+        }
+    }
+
+    private boolean deleteFile(Path path) {
+        try {
+            return Files.deleteIfExists(path);
+        } catch (IOException exception) {
+            log.warn("Failed to delete TTS audio file {}: {}", path, exception.getMessage());
+            return false;
+        }
+    }
+
+    private FileTime lastModifiedTimeOrEpoch(Path path) {
+        try {
+            return Files.getLastModifiedTime(path);
+        } catch (IOException exception) {
+            return FileTime.from(Instant.EPOCH);
+        }
     }
 
     private String readErrorBody(ClientHttpResponse response) throws IOException {

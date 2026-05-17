@@ -29,6 +29,8 @@ tts:
   temperature: ${TTS_TEMPERATURE:1.0}
   fragment-interval: ${TTS_FRAGMENT_INTERVAL:0.3}
   output-dir: ${TTS_OUTPUT_DIR:data/audio}
+  audio-ttl-minutes: ${TTS_AUDIO_TTL_MINUTES:60}
+  audio-max-files: ${TTS_AUDIO_MAX_FILES:100}
 
 app:
   cors:

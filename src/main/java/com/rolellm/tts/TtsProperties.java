@@ -22,6 +22,8 @@ public class TtsProperties {
     private double topP = 1.0;
     private double temperature = 1.0;
     private double fragmentInterval = 0.3;
+    private long audioTtlMinutes = 60;
+    private int audioMaxFiles = 100;
 
     public boolean isEnabled() {
         return enabled;
@@ -157,5 +159,21 @@ public class TtsProperties {
 
     public void setFragmentInterval(double fragmentInterval) {
         this.fragmentInterval = fragmentInterval;
+    }
+
+    public long getAudioTtlMinutes() {
+        return audioTtlMinutes;
+    }
+
+    public void setAudioTtlMinutes(long audioTtlMinutes) {
+        this.audioTtlMinutes = audioTtlMinutes;
+    }
+
+    public int getAudioMaxFiles() {
+        return audioMaxFiles;
+    }
+
+    public void setAudioMaxFiles(int audioMaxFiles) {
+        this.audioMaxFiles = audioMaxFiles;
     }
 }
